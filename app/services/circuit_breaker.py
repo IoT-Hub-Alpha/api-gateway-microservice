@@ -146,7 +146,8 @@ class CircuitBreaker:
             if circuit["failures"] >= self.failure_threshold:
                 circuit["state"] = CircuitState.OPEN
                 logger.warning(
-                    f"Circuit for {service} is now OPEN after {circuit['failures']} failures"
+                    f"Circuit for {service} is now OPEN "
+                    f"after {circuit['failures']} failures"
                 )
             self._set_circuit(service, circuit)
 
