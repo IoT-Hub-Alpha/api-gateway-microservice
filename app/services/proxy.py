@@ -5,6 +5,7 @@ from fastapi import Request, Response
 
 from app.core.config import settings, get_service_url
 from app.services.circuit_breaker import circuit_breaker
+from app.services.rate_limiter import rate_limiter
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,22 @@ async def proxy_request(
     """
     Forward request to backend service.
     """
+    # Check rate limit
+    client_ip = request.client.host if request.client else "unknown"
+    is_allowed, rate_info = rate_limiter.is_allowed(client_ip)
+
+    if not is_allowed:
+        return Response(
+            content='{"detail": "Too many requests"}',
+            status_code=429,
+            media_type="application/json",
+            headers={
+                "X-RateLimit-Limit": str(rate_info["limit"]),
+                "X-RateLimit-Remaining": str(rate_info["remaining"]),
+                "Retry-After": str(rate_info["reset_in"]),
+            },
+        )
+
     try:
         target_url = get_service_url(service)
     except ValueError:

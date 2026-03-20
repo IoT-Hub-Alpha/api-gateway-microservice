@@ -6,6 +6,8 @@ from iot_logging import FastAPIRequestContextMiddleware, StructuredJsonFormatter
 
 from app.api.router import router as api_router
 from app.core.config import settings
+from app.services.circuit_breaker import circuit_breaker
+from app.services.rate_limiter import rate_limiter
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,8 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.APP_NAME} on {settings.HOST}:{settings.PORT}")
     yield
     # Shutdown
+    rate_limiter.close()
+    circuit_breaker.close()
     logger.info(f"Shutting down {settings.APP_NAME}")
 
 

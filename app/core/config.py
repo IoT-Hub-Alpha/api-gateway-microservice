@@ -32,6 +32,15 @@ class Config(BaseSettings):
     # Timeouts
     DEFAULT_TIMEOUT: int = int(os.getenv("DEFAULT_TIMEOUT", "30"))
 
+    # Redis
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")
+
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
+    RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+    RATE_LIMIT_WINDOW: int = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
+
     # Circuit Breaker
     CIRCUIT_BREAKER_FAILURE_THRESHOLD: int = int(
         os.getenv("CIRCUIT_BREAKER_FAILURE_THRESHOLD", "5")
