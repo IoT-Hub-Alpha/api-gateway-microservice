@@ -43,8 +43,8 @@ def create_app() -> FastAPI:
     # Request context middleware (auto-injects request_id, method, path, logs duration)
     app.add_middleware(FastAPIRequestContextMiddleware)
 
-    # Include API router
-    app.include_router(api_router)
+    # Include API router with /api prefix
+    app.include_router(api_router, prefix="/api")
 
     return app
 

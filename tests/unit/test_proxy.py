@@ -6,7 +6,7 @@ import pytest
 
 class TestProxyEndpoints:
     def test_unknown_service_returns_404(self, client):
-        response = client.get("/unknown-service/test")
+        response = client.get("/api/v1/unknown-service/test")
         assert response.status_code == 404
         assert "Unknown service" in response.json()["detail"]
 
@@ -23,7 +23,7 @@ class TestProxyEndpoints:
             mock_instance.__aexit__.return_value = None
             mock_client.return_value = mock_instance
 
-            response = client.get("/devices/test")
+            response = client.get("/api/v1/devices/test")
 
             assert response.status_code == 200
             assert response.json() == {"data": "test"}
@@ -36,7 +36,7 @@ class TestProxyEndpoints:
             mock_instance.__aexit__.return_value = None
             mock_client.return_value = mock_instance
 
-            response = client.get("/devices/test")
+            response = client.get("/api/v1/devices/test")
 
             assert response.status_code == 503
             assert "unavailable" in response.json()["detail"]
@@ -49,7 +49,7 @@ class TestProxyEndpoints:
             mock_instance.__aexit__.return_value = None
             mock_client.return_value = mock_instance
 
-            response = client.get("/devices/test")
+            response = client.get("/api/v1/devices/test")
 
             assert response.status_code == 504
             assert "timeout" in response.json()["detail"]
@@ -59,7 +59,7 @@ class TestProxyEndpoints:
         mock_redis.incr.return_value = 101  # Over default limit of 100
         mock_redis.ttl.return_value = 30
 
-        response = client.get("/devices/test")
+        response = client.get("/api/v1/devices/test")
 
         assert response.status_code == 429
         assert "Too many requests" in response.json()["detail"]
@@ -75,7 +75,7 @@ class TestProxyEndpoints:
             "last_failure_time": str(time.time()),
         }
 
-        response = client.get("/devices/test")
+        response = client.get("/api/v1/devices/test")
 
         assert response.status_code == 503
         assert "temporarily unavailable" in response.json()["detail"]
@@ -93,7 +93,7 @@ class TestProxyEndpoints:
             mock_instance.__aexit__.return_value = None
             mock_client.return_value = mock_instance
 
-            response = client.get("/devices/test?foo=bar&baz=123")
+            response = client.get("/api/v1/devices/test?foo=bar&baz=123")
 
             # Check that the URL included query params
             call_args = mock_instance.request.call_args
@@ -114,7 +114,7 @@ class TestProxyEndpoints:
             mock_client.return_value = mock_instance
 
             response = client.post(
-                "/devices/create",
+                "/api/v1/devices/create",
                 json={"name": "test-device"},
             )
 
