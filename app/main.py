@@ -43,6 +43,15 @@ def create_app() -> FastAPI:
     # Request context middleware (auto-injects request_id, method, path, logs duration)
     app.add_middleware(FastAPIRequestContextMiddleware)
 
+    # Health check endpoints at root level (for infrastructure tools)
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy"}
+
+    @app.get("/ready")
+    async def ready():
+        return {"status": "ready"}
+
     # Include API router with /api prefix
     app.include_router(api_router, prefix="/api")
 

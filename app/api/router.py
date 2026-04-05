@@ -5,16 +5,6 @@ from app.services.proxy import proxy_request
 router = APIRouter()
 
 
-@router.get("/health")
-async def health():
-    return {"status": "healthy"}
-
-
-@router.get("/ready")
-async def ready():
-    return {"status": "ready"}
-
-
 @router.api_route(
     "/{version}/{service}/{path:path}",
     methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
