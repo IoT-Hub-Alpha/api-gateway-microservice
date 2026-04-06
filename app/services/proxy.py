@@ -1,7 +1,9 @@
+import asyncio
 import logging
 
 import httpx
-from fastapi import Request, Response
+import websockets
+from fastapi import Request, Response, WebSocket
 
 from app.core.config import settings, get_service_url
 from app.services.circuit_breaker import circuit_breaker
@@ -111,3 +113,65 @@ async def proxy_request(
             status_code=504,
             media_type="application/json",
         )
+
+
+async def proxy_websocket(websocket: WebSocket, path: str) -> None:
+    """
+    Proxy WebSocket connections to websocket-service.
+
+    Routes /ws/{path} requests to the websocket-service backend.
+
+    Example:
+        ws://localhost:8000/ws/telemetry/?token=xyz -> ws://websocket-service:8006/ws/telemetry/?token=xyz
+    """
+    service = "websocket-service"
+
+    try:
+        target_url = get_service_url(service)
+    except ValueError:
+        await websocket.close(code=4004, reason="Unknown service")
+        return
+
+    # Build WebSocket URL (convert http to ws, https to wss)
+    ws_url = target_url.replace("http://", "ws://").replace("https://", "wss://")
+    ws_url = f"{ws_url}/ws/{path}"
+
+    # Append query string if present
+    query_string = websocket.scope.get("query_string", b"").decode()
+    if query_string:
+        ws_url = f"{ws_url}?{query_string}"
+
+    logger.info(f"Proxying WebSocket /ws/{path} -> {ws_url}")
+
+    try:
+        # Accept the WebSocket connection from client
+        await websocket.accept()
+
+        # Connect to backend WebSocket
+        async with websockets.connect(ws_url) as backend_ws:
+            # Create two concurrent tasks to forward messages both ways
+            async def client_to_backend():
+                try:
+                    while True:
+                        data = await websocket.receive_text()
+                        await backend_ws.send(data)
+                except Exception as e:
+                    logger.error(f"Client -> Backend error: {e}")
+
+            async def backend_to_client():
+                try:
+                    while True:
+                        data = await backend_ws.recv()
+                        await websocket.send_text(data)
+                except Exception as e:
+                    logger.error(f"Backend -> Client error: {e}")
+
+            # Run both concurrently
+            await asyncio.gather(client_to_backend(), backend_to_client())
+
+    except Exception as e:
+        logger.error(f"WebSocket proxy error: {e}")
+        try:
+            await websocket.close(code=1011, reason="Internal error")
+        except Exception:
+            pass

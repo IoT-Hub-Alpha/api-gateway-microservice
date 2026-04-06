@@ -1,13 +1,14 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, WebSocket
 from iot_logging import FastAPIRequestContextMiddleware, StructuredJsonFormatter
 
 from app.api.router import router as api_router
 from app.core.config import settings
 from app.services.circuit_breaker import circuit_breaker
 from app.services.rate_limiter import rate_limiter
+from app.services.proxy import proxy_request, proxy_websocket
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,18 @@ def create_app() -> FastAPI:
 
     # Include API router with /api prefix
     app.include_router(api_router, prefix="/api")
+
+    # HTTP proxy for /ws/demo and other static content at root level
+    @app.api_route("/ws/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+    async def ws_http_proxy(path: str, request: Request):
+        """Proxy HTTP requests to websocket-service (e.g., /ws/demo -> websocket-service/demo)"""
+        return await proxy_request("websocket-service", path, request)
+
+    # WebSocket at root level /ws
+    @app.websocket("/ws/{path:path}")
+    async def websocket_proxy(websocket: WebSocket, path: str):
+        """Proxy WebSocket connections to websocket-service at /ws/telemetry/"""
+        await proxy_websocket(websocket, path)
 
     return app
 
