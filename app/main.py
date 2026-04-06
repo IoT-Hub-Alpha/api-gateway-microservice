@@ -59,7 +59,7 @@ def create_app() -> FastAPI:
     # HTTP proxy for /ws/demo and other static content at root level
     @app.api_route("/ws/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
     async def ws_http_proxy(path: str, request: Request):
-        """Proxy HTTP requests to websocket-service (e.g., /ws/demo -> websocket-service/demo)"""
+        """Proxy HTTP requests to websocket-service."""
         return await proxy_request("websocket-service", path, request)
 
     # WebSocket at root level /ws

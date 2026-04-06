@@ -122,7 +122,8 @@ async def proxy_websocket(websocket: WebSocket, path: str) -> None:
     Routes /ws/{path} requests to the websocket-service backend.
 
     Example:
-        ws://localhost:8000/ws/telemetry/?token=xyz -> ws://websocket-service:8006/ws/telemetry/?token=xyz
+        ws://localhost:8000/ws/telemetry/?token=xyz ->
+        ws://websocket-service:8006/ws/telemetry/?token=xyz
     """
     service = "websocket-service"
 
