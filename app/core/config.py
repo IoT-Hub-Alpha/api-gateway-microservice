@@ -28,6 +28,9 @@ class Config(BaseSettings):
     EVENTS_SERVICE_URL: str = os.getenv(
         "EVENTS_SERVICE_URL", "http://events-service:8004"
     )
+    WEBSOCKET_SERVICE_URL: str = os.getenv(
+        "WEBSOCKET_SERVICE_URL", "http://websocket-service:8006"
+    )
 
     # Timeouts
     DEFAULT_TIMEOUT: int = int(os.getenv("DEFAULT_TIMEOUT", "30"))
@@ -73,6 +76,10 @@ BACKEND_SERVICES = {
     "events": {
         "prefix": "/events",
         "url": settings.EVENTS_SERVICE_URL,
+    },
+    "websocket-service": {
+        "prefix": "/ws",
+        "url": settings.WEBSOCKET_SERVICE_URL,
     },
 }
 

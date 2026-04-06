@@ -5,10 +5,10 @@ WORKDIR /app
 # Install git (needed for git+https:// dependencies)
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY services/api-gateway/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY services/api-gateway/ .
 
 EXPOSE 8000
 
