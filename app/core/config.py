@@ -28,6 +28,10 @@ class Config(BaseSettings):
     EVENTS_SERVICE_URL: str = os.getenv(
         "EVENTS_SERVICE_URL", "http://events-service:8004"
     )
+    
+    NOTIFICATIONS_SERVICE_URL: str = os.getenv("NOTIFICATIONS_SERVICE_URL", "http://notification-api:8015")
+    
+    USER_SERVICE_URL: str = os.getenv("USER_SERVICE_URL", "http://user-api:8013")
 
     # Timeouts
     DEFAULT_TIMEOUT: int = int(os.getenv("DEFAULT_TIMEOUT", "30"))
@@ -74,6 +78,14 @@ BACKEND_SERVICES = {
         "prefix": "/events",
         "url": settings.EVENTS_SERVICE_URL,
     },
+    "notifications": {
+        "prefix": "/notifications",
+        "url": settings.NOTIFICATIONS_SERVICE_URL
+    },
+    "users": {
+        "prefix": "/users",
+        "url": settings.USER_SERVICE_URL
+    }
 }
 
 
